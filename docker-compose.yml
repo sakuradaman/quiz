@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  server:
+    build: 
+      context: .
+      dockerfile: ./build/docker/app/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    # mysqlのコンテナが立ち上がるまで待つ
+    depends_on:
+      - mysql
+
+  mysql:
+    build:
+      context: .
+      dockerfile: ./build/docker/mysql/Dockerfile.mysql
+    container_name: mysql
+    # image: mysql:8.0 <- dockerfileで設定
+    # 異常終了時に自動で再起動する
+    restart: always
+    platform: linux/x86_64 # for M1 mac user
+    ports:
+      - "3306:3306"
+    volumes:
+      # db作成
+      - ./build/docker/mysql/init:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD}
+      MYSQL_DATABASE: dramas
+    
